@@ -1,2 +1,0 @@
-# flutter_shop_myself
-这是一个Flutter电子商城项目
