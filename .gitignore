@@ -9,6 +9,7 @@
 .buildlog/
 .history
 .svn/
+.build/
 
 # IntelliJ related
 *.iml
@@ -18,6 +19,7 @@
 
 # Visual Studio Code related
 .vscode/
+
 
 # Flutter/Dart/Pub related
 **/doc/api/
