@@ -15,18 +15,22 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
+  int page = 1;
+  List<Map> hotGoodsList = [];
+
   @override
   bool get wantKeepAlive => true;
   String homePageContent = "正在获取数据";
 
   @override
   void initState() {
-    getHomePageContent().then((val) {
-      setState(() {
-        homePageContent = val.toString();
-      });
-    });
+    // getHomePageContent().then((val) {
+    //   setState(() {
+    //     homePageContent = val.toString();
+    //   });
+    // });
     super.initState();
+    _getHotGoods();
   }
 
   @override
@@ -37,7 +41,7 @@ class _HomePageState extends State<HomePage>
         title: Text("百姓生活+"),
       ),
       body: FutureBuilder(
-        future: request('homePageContent', formData),
+        future: request('homePageContent', formData: formData),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             var data = json.decode(snapshot.data.toString());
@@ -94,7 +98,7 @@ class _HomePageState extends State<HomePage>
                   FloorContent(
                     floorGoodsList: floor3,
                   ),
-                  HootGoods(),
+                  _hotGoods(),
                 ],
               ),
             );
@@ -104,6 +108,85 @@ class _HomePageState extends State<HomePage>
             );
           }
         },
+      ),
+    );
+  }
+
+//获取热销商品数据
+  void _getHotGoods() {
+    var formData = {'page': page};
+    request('homePageBelowContent', formData: formData).then((val) {
+      var data = json.decode(val.toString());
+      List<Map> newGoodsList = (data['data'] as List).cast();
+      setState(() {
+        hotGoodsList.addAll(newGoodsList);
+        page++;
+      });
+    });
+  }
+
+  Widget hotTitle = Container(
+    margin: EdgeInsets.only(top: 10.0),
+    alignment: Alignment.center,
+    color: Colors.transparent,
+    padding: EdgeInsets.all(5.0),
+    child: Text('火爆专区'),
+  );
+
+  Widget _wrapList() {
+    if (hotGoodsList.length != 0) {
+      List<Widget> listWidget = hotGoodsList.map((val) {
+        return InkWell(
+          onTap: () {},
+          child: Container(
+            width: ScreenUtil().setWidth(372),
+            color: Colors.white,
+            padding: EdgeInsets.all(5.0),
+            margin: EdgeInsets.only(bottom: 3.0),
+            child: Column(
+              children: <Widget>[
+                Image.network(
+                  val['image'],
+                  width: ScreenUtil().setWidth(370),
+                ),
+                Text(
+                  val['name'],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: Colors.pink, fontSize: ScreenUtil().setSp(26)),
+                ),
+                Row(
+                  children: <Widget>[
+                    Text('￥${val['mallPrice']}'),
+                    Text(
+                      '￥${val['price']}',
+                      style: TextStyle(
+                          color: Colors.black26,
+                          decoration: TextDecoration.lineThrough),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList();
+
+      //流式布局
+      return Wrap(
+        spacing: 2,//代表是两列
+        children: listWidget,
+      );
+    } else {
+      return Text('暂时没有数据');
+    }
+  }
+
+  Widget _hotGoods() {
+    return Container(
+      child: Column(
+        children: <Widget>[hotTitle, _wrapList()],
       ),
     );
   }
@@ -117,7 +200,7 @@ class SwiperDiy extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ScreenUtil.instance = ScreenUtil(width: 750, height: 1334)..init(context);
+    
     return Container(
       height: ScreenUtil().setHeight(300),
       width: ScreenUtil().setWidth(750),
@@ -356,26 +439,6 @@ class FloorContent extends StatelessWidget {
         },
         child: Image.network(goods['image']),
       ),
-    );
-  }
-}
-
-class HootGoods extends StatefulWidget {
-  _HootGoodsState createState() => _HootGoodsState();
-}
-
-class _HootGoodsState extends State<HootGoods> {
-  void initState() {
-    super.initState();
-    request('homePageBelowContent', 1).then((val) {
-      print(val);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: Text('111'),
     );
   }
 }
